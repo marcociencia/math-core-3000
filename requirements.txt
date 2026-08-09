@@ -1,3 +1,2 @@
 streamlit
 pybind11>=2.6.0
-.
