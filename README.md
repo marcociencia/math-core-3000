@@ -1,2 +1,24 @@
-# math-core-3000
-A high-performance calculator bridging C++ power with a sleek Streamlit frontend. Uses Pybind11 for seamless execution of complex mathematical operations in a responsive web dashboard.
+# 🧮 Math Core 3000 - C++ Powered Calculator
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://share.streamlit.io/](https://share.streamlit.io/))
+
+## 🚀 Features
+
+- ⚡ **C++ High-Performance Engine** - Mathematical operations handled by C++
+- 🔗 **Pybind11 Integration** - Seamless Python/C++ binding
+- 🖥️ **Streamlit UI** - Modern, responsive web interface
+- 🚀 **Cloud Ready** - Easy deployment on Streamlit Cloud
+
+## 🛠️ Tech Stack
+
+- **Python 3.8+**
+- **C++17 (via Pybind11)**
+- **Streamlit**
+
+## 🚀 Quick Start
+
+```bash
+git clone https://github.com/YOUR_USERNAME/math-core-3000.git
+cd math-core-3000
+pip install .
+streamlit run app.py
