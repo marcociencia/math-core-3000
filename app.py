@@ -1,45 +1,37 @@
-# ============================================
-# COMPILAÇÃO AUTOMÁTICA DO C++ (VERSÃO CORRIGIDA)
-# ============================================
 @st.cache_resource
 def get_calculator():
-    """Compila e carrega o módulo C++ automaticamente"""
+    """Compila e carrega o módulo C++"""
     try:
-        # Tenta importar primeiro (se já foi compilado)
         import calc_backend
-        st.success("✅ C++ Backend Loaded!")
         return calc_backend.AdvancedCalculator(), "C++"
     except ImportError:
-        # Se falhar, instala compilador e compila
-        with st.spinner("🔧 Instalando compilador C++ e compilando módulo... (2-3 minutos)"):
+        with st.spinner("🔧 Compilando C++ backend... (pode levar 2-3 minutos)"):
             try:
-                # Passo 1: Instalar compilador C++
-                st.info("📦 Instalando g++ compiler...")
-                os.system("sudo apt-get update -qq")
-                os.system("sudo apt-get install -y -qq build-essential g++ python3-dev")
+                # Instalar dependências do sistema
+                import subprocess
                 
-                # Passo 2: Instalar pybind11
-                st.info("📦 Instalando pybind11...")
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", "pybind11>=2.10.0"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
+                # Atualizar e instalar compilador
+                subprocess.run(
+                    "apt-get update && apt-get install -y build-essential g++ python3-dev",
+                    shell=True, check=True, capture_output=True
                 )
                 
-                # Passo 3: Compilar o módulo C++
-                st.info("🔨 Compilando calc_backend...")
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", "-e", "."],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
+                # Instalar pybind11 via pip
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "pybind11"],
+                    check=True, capture_output=True
                 )
                 
-                # Passo 4: Verificar se compilou
+                # Compilar o módulo
+                result = subprocess.run(
+                    [sys.executable, "setup.py", "build_ext", "--inplace"],
+                    check=True, capture_output=True, text=True
+                )
+                
+                # Tentar importar novamente
                 import calc_backend
-                st.success("✅ C++ Backend compilado com sucesso!")
                 return calc_backend.AdvancedCalculator(), "C++"
                 
             except Exception as e:
-                st.warning(f"⚠️ Não foi possível compilar C++: {str(e)[:100]}...")
-                st.info("Usando Python como fallback...")
-                return PythonCalculator(), "Python (fallback)"
+                st.warning(f"⚠️ C++ compilation failed, using Python backend")
+                return PythonCalculator(), "Python"
