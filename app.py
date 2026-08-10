@@ -1,8 +1,6 @@
 import streamlit as st
-import subprocess
-import sys
-import os
 import time
+from calc_backend import AdvancedCalculator
 
 # Page configuration
 st.set_page_config(
@@ -12,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for elegant design
+# Custom CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
@@ -96,18 +94,6 @@ st.markdown("""
         box-shadow: 0 10px 20px rgba(108, 99, 255, 0.4);
     }
     
-    .stSelectbox > div > div {
-        background: rgba(38, 39, 48, 0.8);
-        border: 1px solid rgba(108, 99, 255, 0.3);
-        border-radius: 10px;
-    }
-    
-    .stNumberInput > div > div {
-        background: rgba(38, 39, 48, 0.8);
-        border: 1px solid rgba(108, 99, 255, 0.3);
-        border-radius: 10px;
-    }
-    
     .history-item {
         background: rgba(108, 99, 255, 0.05);
         border-left: 3px solid #6C63FF;
@@ -124,56 +110,23 @@ st.markdown("""
         margin-top: 2rem;
         font-size: 0.8rem;
     }
+    
+    .stSelectbox > div > div {
+        background: rgba(38, 39, 48, 0.8) !important;
+        border: 1px solid rgba(108, 99, 255, 0.3) !important;
+        border-radius: 10px !important;
+    }
+    
+    .stNumberInput > div > div {
+        background: rgba(38, 39, 48, 0.8) !important;
+        border: 1px solid rgba(108, 99, 255, 0.3) !important;
+        border-radius: 10px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Try to import C++ backend, compile if needed
-@st.cache_resource
-def get_calculator():
-    try:
-        import calc_backend
-        return calc_backend.AdvancedCalculator()
-    except ImportError:
-        with st.spinner("🔧 Compiling C++ backend for maximum performance..."):
-            try:
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", "-e", "."],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
-                )
-                import calc_backend
-                return calc_backend.AdvancedCalculator()
-            except:
-                st.error("Failed to compile C++ backend. Using Python fallback.")
-                return None
-
-# Fallback Python calculator
-class PythonCalculator:
-    def add(self, a, b): return a + b
-    def subtract(self, a, b): return a - b
-    def multiply(self, a, b): return a * b
-    def divide(self, a, b):
-        if b == 0: raise ZeroDivisionError("Division by zero!")
-        return a / b
-    def power(self, a, b): return a ** b
-    def sqrt(self, a):
-        if a < 0: raise ValueError("Cannot calculate square root of negative number!")
-        return a ** 0.5
-    def percentage(self, a, b): return (a * b) / 100
-    def factorial(self, n):
-        if n < 0: raise ValueError("Factorial of negative number!")
-        if n > 20: raise ValueError("Number too large!")
-        result = 1
-        for i in range(2, int(n) + 1): result *= i
-        return result
-
 # Initialize calculator
-calc = get_calculator()
-if calc is None:
-    calc = PythonCalculator()
-    using_cpp = False
-else:
-    using_cpp = True
+calc = AdvancedCalculator()
 
 # Session state for history
 if 'history' not in st.session_state:
@@ -181,22 +134,25 @@ if 'history' not in st.session_state:
 
 # Main Interface
 st.markdown('<h1 class="main-title">⚡ Math Core 3000</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Ultra-Fast Calculation Engine</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Advanced Calculation Engine</p>', unsafe_allow_html=True)
 
 # Calculator Container
 with st.container():
     st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
     
-    # Operation selector with icons
+    # Operation selector
     operations = {
         "➕ Addition": "add",
-        "➖ Subtraction": "subtract",
+        "➖ Subtraction": "subtract", 
         "✖️ Multiplication": "multiply",
         "➗ Division": "divide",
         "🔢 Power": "power",
         "√ Square Root": "sqrt",
         "💯 Percentage": "percentage",
-        "❗ Factorial": "factorial"
+        "❗ Factorial": "factorial",
+        "📐 Sine": "sin",
+        "📐 Cosine": "cos",
+        "📊 Logarithm": "log"
     }
     
     selected_op = st.selectbox(
@@ -216,8 +172,8 @@ with st.container():
         )
     
     with col2:
-        if operations[selected_op] in ["sqrt", "factorial"]:
-            num2 = 0  # Not used
+        if operations[selected_op] in ["sqrt", "factorial", "sin", "cos"]:
+            num2 = 0
             st.number_input(
                 "Second Number",
                 value=0.0,
@@ -237,20 +193,29 @@ with st.container():
         try:
             operation_func = getattr(calc, operations[selected_op])
             
-            if operations[selected_op] in ["sqrt", "factorial"]:
+            if operations[selected_op] in ["sqrt", "factorial", "sin", "cos"]:
                 result = operation_func(num1)
                 expression = f"{operations[selected_op].split()[-1].lower()}({num1})"
             else:
                 result = operation_func(num1, num2)
                 expression = f"{num1} {operations[selected_op].split()[1]} {num2}"
             
+            # Format result
+            if isinstance(result, float):
+                if abs(result) > 1e10 or abs(result) < 1e-10:
+                    result_str = f"{result:.6e}"
+                else:
+                    result_str = f"{result:.6f}".rstrip('0').rstrip('.')
+            else:
+                result_str = str(result)
+            
             # Display result
             st.markdown(f"""
                 <div class="result-display">
                     <div class="result-label">Result</div>
-                    <div class="result-number">{result:.6g}</div>
+                    <div class="result-number">{result_str}</div>
                     <div style="color: #8B8B8B; font-size: 0.8rem; margin-top: 0.5rem;">
-                        {expression} = {result:.6g}
+                        {expression} = {result_str}
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -258,7 +223,7 @@ with st.container():
             # Add to history
             st.session_state.history.append({
                 'expression': expression,
-                'result': result,
+                'result': result_str,
                 'timestamp': time.strftime("%H:%M:%S")
             })
             
@@ -269,46 +234,54 @@ with st.container():
 
 # History section
 if st.session_state.history:
-    with st.expander("📜 Calculation History", expanded=False):
-        for item in reversed(st.session_state.history[-5:]):  # Show last 5
+    with st.expander(f"📜 Calculation History ({len(st.session_state.history)} operations)", expanded=False):
+        for item in reversed(st.session_state.history[-10:]):
             st.markdown(f"""
                 <div class="history-item">
-                    <strong>{item['expression']}</strong> = {item['result']:.6g}
+                    <strong>{item['expression']}</strong> = {item['result']}
                     <span style="color: #8B8B8B; float: right;">{item['timestamp']}</span>
                 </div>
             """, unsafe_allow_html=True)
         
-        if st.button("Clear History"):
-            st.session_state.history = []
-            st.rerun()
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            if st.button("🗑️ Clear", use_container_width=True):
+                st.session_state.history = []
+                st.rerun()
 
 # Footer
-st.markdown(f"""
+st.markdown("""
     <div class="footer">
-        🚀 Powered by {'C++' if using_cpp else 'Python'} Backend | 
-        Math Core 3000 v1.0.0 | 
+        🚀 Math Core 3000 v1.0.0 | 
         Made with ❤️ using Streamlit
     </div>
 """, unsafe_allow_html=True)
 
-# Sidebar info
+# Sidebar
 with st.sidebar:
-    st.markdown("### 🧮 About")
-    st.markdown(f"""
-    **Backend:** {'⚡ C++ (Ultra Fast)' if using_cpp else '🐍 Python (Standard)'}
+    st.markdown("### 🧮 Calculator Info")
+    st.markdown("""
+    **Backend:** 🐍 Python
+    
+    **Available Operations:**
+    - Basic arithmetic
+    - Power & roots
+    - Trigonometry
+    - Logarithms
+    - Factorial
     
     **Features:**
-    - Basic arithmetic
-    - Advanced operations
     - Calculation history
+    - High precision
     - Beautiful UI
-    
-    **Tech Stack:**
-    - Frontend: Streamlit
-    - Backend: C++/Python
-    - Binding: PyBind11
+    - Error handling
     """)
     
     st.markdown("---")
     st.markdown("### 📊 Stats")
-    st.metric("Operations", len(st.session_state.history))
+    st.metric("Total Operations", len(st.session_state.history))
+    
+    if st.session_state.history:
+        st.markdown("### 🔥 Last Operation")
+        last = st.session_state.history[-1]
+        st.code(f"{last['expression']} = {last['result']}")
