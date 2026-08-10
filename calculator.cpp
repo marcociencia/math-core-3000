@@ -1,34 +1,24 @@
 #include <pybind11/pybind11.h>
-#include <stdexcept>
 #include <cmath>
+#include <stdexcept>
 
 namespace py = pybind11;
 
 class AdvancedCalculator {
 public:
     double add(double a, double b) { return a + b; }
-    
     double subtract(double a, double b) { return a - b; }
-    
     double multiply(double a, double b) { return a * b; }
-    
     double divide(double a, double b) { 
         if (b == 0.0) throw std::invalid_argument("Division by zero!");
         return a / b; 
     }
-    
-    double power(double base, double exp) { 
-        return std::pow(base, exp); 
-    }
-    
+    double power(double base, double exp) { return std::pow(base, exp); }
     double sqrt_num(double a) { 
-        if (a < 0) throw std::invalid_argument("Cannot calculate square root of negative number!");
+        if (a < 0) throw std::invalid_argument("Negative square root!");
         return std::sqrt(a); 
     }
-    
-    double percentage(double a, double b) { 
-        return (a * b) / 100.0; 
-    }
+    double percentage(double a, double b) { return (a * b) / 100.0; }
 };
 
 PYBIND11_MODULE(calc_backend, m) {
