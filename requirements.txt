@@ -1,2 +1,3 @@
-streamlit
-pybind11>=2.6.0
+streamlit>=1.28.0
+pybind11>=2.10.0
+numpy
