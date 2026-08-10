@@ -30,7 +30,7 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    /* Esconde elementos padrão do Streamlit para um visual mais limpo */
+    /* Esconde elementos padrão do Streamlit */
     #MainMenu {visibility: hidden;}
     header {visibility: hidden;}
     footer {visibility: hidden;}
@@ -51,7 +51,7 @@ st.markdown("""
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 0, 0, 0.1) !important;
     }
     
-    /* Labels (Operation, First Number, Second Number) */
+    /* Labels */
     label, .st-emotion-cache-1yvjcxv p, .st-emotion-cache-16idsys p {
         color: #A0A0A5 !important;
         font-family: 'Inter', sans-serif !important;
@@ -72,14 +72,14 @@ st.markdown("""
         padding: 8px 12px !important;
     }
     
-    /* Ajuste de foco nos inputs */
+    /* Foco nos inputs */
     div[data-baseweb="select"] > div:focus-within,
     input[type="number"]:focus {
         border-color: #5C4FFF !important;
         box-shadow: 0 0 0 1px #5C4FFF !important;
     }
     
-    /* Remover setas de incremento do st.number_input visualmente (opcional para ficar limpo) */
+    /* Remover setas dos inputs numéricos */
     input[type="number"]::-webkit-inner-spin-button, 
     input[type="number"]::-webkit-outer-spin-button { 
         -webkit-appearance: none; 
@@ -113,19 +113,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Session state 
+# Session state
 if 'display_value' not in st.session_state:
-    st.session_state.display_value = "3"  # Inicia com 3 para espelhar a imagem perfeitamente
+    st.session_state.display_value = "3"
 
-# Cabeçalho da Calculadora (Título e Badge)
-st.markdown(f"""
+# Cabeçalho da Calculadora
+st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
         <h1 style="color: white; font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px;">
             <span style="color: #FF7043;">⚡</span> Math Core 3000
         </h1>
         <div>
             <span style="background-color: #FFC107; color: #000; padding: 4px 16px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; font-family: 'Inter', sans-serif;">
-                {backend_type} Backend
+                Python C++ Backend
             </span>
         </div>
     </div>
@@ -149,7 +149,6 @@ selected_op = st.selectbox("Operation", op_names, label_visibility="visible")
 col1, col2 = st.columns(2)
 
 with col1:
-    # Definido 9.00 como default para igualar à imagem
     num1 = st.number_input("First Number", value=9.00, format="%.2f", key="n1")
 
 with col2:
@@ -166,7 +165,6 @@ if st.button("🚀 Calculate", use_container_width=True, key="calc_btn"):
         else:
             result = op_func(num1, num2)
         
-        # Remove a casa decimal se o número for inteiro (ex: 3.0 vira 3)
         if result == int(result):
             result_str = str(int(result))
         else:
@@ -196,8 +194,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Rodapé
-st.markdown(f"""
+st.markdown("""
     <div style="text-align: center; color: #6E707E; font-size: 0.75rem; margin-top: 25px; font-family: 'Inter', sans-serif;">
-        🚀 Math Core 3000 • {backend_type} Powered
+        🚀 Math Core 3000 • Python C++ Powered
     </div>
 """, unsafe_allow_html=True)
