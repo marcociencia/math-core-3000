@@ -1,6 +1,8 @@
 import streamlit as st
+import subprocess
+import sys
+import os
 import time
-from calc_backend import AdvancedCalculator
 
 # Page configuration
 st.set_page_config(
@@ -9,6 +11,54 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
+# ============================================
+# COMPILAÇÃO AUTOMÁTICA DO C++
+# ============================================
+@st.cache_resource
+def get_calculator():
+    """Compila e carrega o módulo C++ automaticamente"""
+    try:
+        # Tenta importar primeiro
+        import calc_backend
+        return calc_backend.AdvancedCalculator(), "C++"
+    except ImportError:
+        # Se falhar, compila
+        with st.spinner("🔧 Compilando módulo C++... (isso pode levar 1-2 minutos)"):
+            try:
+                # Instala o pacote em modo desenvolvimento
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "install", "-e", "."],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                import calc_backend
+                return calc_backend.AdvancedCalculator(), "C++"
+            except Exception as e:
+                st.warning(f"Não foi possível compilar C++: {str(e)}")
+                # Fallback para Python
+                return PythonCalculator(), "Python (fallback)"
+
+class PythonCalculator:
+    """Calculadora Python de backup"""
+    def add(self, a, b): return a + b
+    def subtract(self, a, b): return a - b
+    def multiply(self, a, b): return a * b
+    def divide(self, a, b):
+        if b == 0: raise ZeroDivisionError("Division by zero!")
+        return a / b
+    def power(self, a, b): return a ** b
+    def sqrt(self, a):
+        if a < 0: raise ValueError("Cannot calculate square root of negative number!")
+        return a ** 0.5
+    def percentage(self, a, b): return (a * b) / 100.0
+
+# Inicializa a calculadora
+calc, backend_type = get_calculator()
+
+# ============================================
+# INTERFACE ELEGANTE
+# ============================================
 
 # Custom CSS
 st.markdown("""
@@ -68,13 +118,6 @@ st.markdown("""
         font-weight: 700;
     }
     
-    .result-label {
-        color: #8B8B8B;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    
     .stButton > button {
         background: linear-gradient(135deg, #6C63FF 0%, #4834D4 100%);
         color: white;
@@ -110,25 +153,51 @@ st.markdown("""
         margin-top: 2rem;
         font-size: 0.8rem;
     }
+    
+    .backend-badge {
+        display: inline-block;
+        padding: 0.2rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .cpp-badge {
+        background: rgba(108, 99, 255, 0.2);
+        color: #6C63FF;
+        border: 1px solid #6C63FF;
+    }
+    
+    .python-badge {
+        background: rgba(255, 193, 7, 0.2);
+        color: #FFC107;
+        border: 1px solid #FFC107;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize calculator
-calc = AdvancedCalculator()
-
-# Session state for history
+# Session state
 if 'history' not in st.session_state:
     st.session_state.history = []
 
 # Main Interface
 st.markdown('<h1 class="main-title">⚡ Math Core 3000</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Advanced Calculation Engine</p>', unsafe_allow_html=True)
+
+# Badge do backend
+badge_class = "cpp-badge" if backend_type == "C++" else "python-badge"
+st.markdown(f"""
+    <p class="subtitle">
+        Advanced Calculation Engine • 
+        <span class="backend-badge {badge_class}">{backend_type} Backend</span>
+    </p>
+""", unsafe_allow_html=True)
 
 # Calculator Container
 with st.container():
     st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
     
-    # Operation selector
     operations = {
         "➕ Addition": "add",
         "➖ Subtraction": "subtract", 
@@ -136,11 +205,7 @@ with st.container():
         "➗ Division": "divide",
         "🔢 Power": "power",
         "√ Square Root": "sqrt",
-        "💯 Percentage": "percentage",
-        "❗ Factorial": "factorial",
-        "📐 Sine": "sin",
-        "📐 Cosine": "cos",
-        "📊 Logarithm": "log"
+        "💯 Percentage": "percentage"
     }
     
     selected_op = st.selectbox(
@@ -152,63 +217,37 @@ with st.container():
     col1, col2 = st.columns(2)
     
     with col1:
-        num1 = st.number_input(
-            "First Number",
-            value=0.0,
-            format="%.4f",
-            help="Enter the first number"
-        )
+        num1 = st.number_input("First Number", value=0.0, format="%.4f")
     
     with col2:
-        if operations[selected_op] in ["sqrt", "factorial", "sin", "cos"]:
+        if operations[selected_op] == "sqrt":
             num2 = 0
-            st.number_input(
-                "Second Number",
-                value=0.0,
-                disabled=True,
-                help="Not required for this operation"
-            )
+            st.number_input("Second Number", value=0.0, disabled=True)
         else:
-            num2 = st.number_input(
-                "Second Number",
-                value=0.0,
-                format="%.4f",
-                help="Enter the second number"
-            )
+            num2 = st.number_input("Second Number", value=0.0, format="%.4f")
     
-    # Calculate button
     if st.button("🚀 Calculate", use_container_width=True):
         try:
             operation_func = getattr(calc, operations[selected_op])
             
-            if operations[selected_op] in ["sqrt", "factorial", "sin", "cos"]:
+            if operations[selected_op] == "sqrt":
                 result = operation_func(num1)
-                expression = f"{operations[selected_op].split()[-1].lower()}({num1})"
+                expression = f"√({num1})"
             else:
                 result = operation_func(num1, num2)
-                expression = f"{num1} {operations[selected_op].split()[1]} {num2}"
+                expression = f"{num1} {selected_op.split()[1]} {num2}"
             
-            # Format result
-            if isinstance(result, float):
-                if abs(result) > 1e10 or abs(result) < 1e-10:
-                    result_str = f"{result:.6e}"
-                else:
-                    result_str = f"{result:.6f}".rstrip('0').rstrip('.')
-            else:
-                result_str = str(result)
+            result_str = f"{result:.6g}"
             
-            # Display result
             st.markdown(f"""
                 <div class="result-display">
-                    <div class="result-label">Result</div>
                     <div class="result-number">{result_str}</div>
-                    <div style="color: #8B8B8B; font-size: 0.8rem; margin-top: 0.5rem;">
+                    <div style="color: #8B8B8B; margin-top: 0.5rem;">
                         {expression} = {result_str}
                     </div>
                 </div>
             """, unsafe_allow_html=True)
             
-            # Add to history
             st.session_state.history.append({
                 'expression': expression,
                 'result': result_str,
@@ -216,13 +255,13 @@ with st.container():
             })
             
         except Exception as e:
-            st.error(f"⚠️ Error: {str(e)}")
+            st.error(f"⚠️ {str(e)}")
     
     st.markdown('</div>', unsafe_allow_html=True)
 
-# History section
+# History
 if st.session_state.history:
-    with st.expander(f"📜 Calculation History ({len(st.session_state.history)} operations)", expanded=False):
+    with st.expander(f"📜 History ({len(st.session_state.history)})", expanded=False):
         for item in reversed(st.session_state.history[-10:]):
             st.markdown(f"""
                 <div class="history-item">
@@ -231,45 +270,17 @@ if st.session_state.history:
                 </div>
             """, unsafe_allow_html=True)
         
-        col1, col2 = st.columns([1, 3])
-        with col1:
-            if st.button("🗑️ Clear", use_container_width=True):
-                st.session_state.history = []
-                st.rerun()
+        if st.button("🗑️ Clear History"):
+            st.session_state.history = []
+            st.rerun()
 
-# Footer
-st.markdown("""
+st.markdown(f"""
     <div class="footer">
-        🚀 Math Core 3000 v1.0.0 | 
-        Made with ❤️ using Streamlit
+        🚀 Math Core 3000 v1.0.0 • {backend_type} Powered
     </div>
 """, unsafe_allow_html=True)
 
-# Sidebar
 with st.sidebar:
-    st.markdown("### 🧮 Calculator Info")
-    st.markdown("""
-    **Backend:** 🐍 Python
-    
-    **Available Operations:**
-    - Basic arithmetic
-    - Power & roots
-    - Trigonometry
-    - Logarithms
-    - Factorial
-    
-    **Features:**
-    - Calculation history
-    - High precision
-    - Beautiful UI
-    - Error handling
-    """)
-    
-    st.markdown("---")
-    st.markdown("### 📊 Stats")
-    st.metric("Total Operations", len(st.session_state.history))
-    
-    if st.session_state.history:
-        st.markdown("### 🔥 Last Operation")
-        last = st.session_state.history[-1]
-        st.code(f"{last['expression']} = {last['result']}")
+    st.markdown("### 🧮 About")
+    st.markdown(f"**Backend:** {backend_type}")
+    st.markdown(f"**Operations:** {len(st.session_state.history)}")
