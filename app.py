@@ -1,7 +1,10 @@
 import streamlit as st
 import time
 
-# Tenta importar C++, senão usa Python
+if "n2_input" not in st.session_state:
+    st.session_state["n2_input"] = 0.0
+    
+# Try import C++, otherwise, use Python
 try:
     import calc_backend
     calc = calc_backend.AdvancedCalculator()
