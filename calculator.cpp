@@ -18,6 +18,9 @@ public:
         if (a < 0) throw std::invalid_argument("Negative square root!");
         return std::sqrt(a); 
     }
+    double cbrt(double a) { 
+        return std::cbrt(a);  // C++17 já tem cbrt!
+    }
     double percentage(double a, double b) { return (a * b) / 100.0; }
 };
 
@@ -30,5 +33,6 @@ PYBIND11_MODULE(calc_backend, m) {
         .def("divide", &AdvancedCalculator::divide)
         .def("power", &AdvancedCalculator::power)
         .def("sqrt", &AdvancedCalculator::sqrt_num)
+        .def("cbrt", &AdvancedCalculator::cbrt)
         .def("percentage", &AdvancedCalculator::percentage);
 }
