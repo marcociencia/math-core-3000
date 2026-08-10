@@ -1,9 +1,9 @@
-[theme]
-primaryColor = "#6C63FF"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#262730"
-textColor = "#FAFAFA"
-font = "sans serif"
+[build-system]
+requires = ["setuptools>=42", "wheel", "pybind11>=2.10.0"]
+build-backend = "setuptools.build_meta"
 
-[server]
-maxUploadSize = 1
+[project]
+name = "math-core-3000"
+version = "1.0.0"
+description = "Super Calculator with C++ Backend"
+requires-python = ">=3.7"
