@@ -1,15 +1,15 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import subprocess
 import sys
 import os
 
-# Tentar importar o módulo compilado
+# Tentar importar, se falhar, compilar automaticamente
 try:
     import calc_backend
 except ImportError:
-    st.error("Compilando o módulo C++ pela primeira vez...")
-    # Compilar o módulo
-    os.system("pip install -e .")
+    st.warning("Compiling C++ module... This may take a minute.")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-e", "."])
     import calc_backend
 
-# Resto do código permanece igual...
+# Resto do seu código permanece igual...
