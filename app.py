@@ -29,134 +29,139 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
     
-    /* Fundo geral */
+    /* Fundo geral - Cinza Moderno */
     .stApp {
-        background: #1C1C1E;
+        background: #2B303A;
     }
     
     /* Container principal do Streamlit */
     .block-container {
-        padding: 1rem 1rem 0.5rem 1rem !important;
-        max-width: 750px !important;
+        padding: 2rem 1rem 1rem 1rem !important;
+        max-width: 680px !important;
     }
     
     .main-title {
         font-family: 'Inter', sans-serif;
         color: #FFFFFF;
         text-align: center;
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 700;
         margin-bottom: 0.2rem;
         letter-spacing: -0.5px;
     }
     
     .subtitle {
-        color: #8E8E93;
+        color: #94A3B8;
         text-align: center;
-        font-size: 0.85rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.88rem;
+        margin-bottom: 1.8rem;
         font-family: 'Inter', sans-serif;
     }
     
-    /* ========== CALCULADORA ========== */
+    /* ========== CALCULADORA (AZUL ESCURO) ========== */
     .calculator-container {
-        background: #3A3A3C;
-        border-radius: 16px;
-        padding: 20px 24px 24px 24px;
+        background: #0F172A; /* Azul Escuro Navy */
+        border-radius: 28px; /* Cantos arredondados */
+        padding: 28px 30px;
         margin: 0 auto;
         width: 100%;
+        /* Sombra estilosa e profunda */
         box-shadow: 
-            0 10px 40px rgba(0, 0, 0, 0.6),
-            0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            0 25px 50px -12px rgba(0, 0, 0, 0.5),
+            0 10px 25px -5px rgba(15, 23, 42, 0.6),
+            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     }
     
     /* Display */
     .display {
-        background: #2C2C2E;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 16px;
+        background: #1E293B;
+        border-radius: 18px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
         text-align: right;
-        min-height: 70px;
+        min-height: 80px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
     .display-label {
-        color: #8E8E93;
+        color: #64748B;
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         font-family: 'Inter', sans-serif;
         margin-bottom: 2px;
+        font-weight: 600;
     }
     
     .display-value {
         font-family: 'JetBrains Mono', monospace;
-        color: #FFFFFF;
-        font-size: 2.2rem;
+        color: #F8FAFC;
+        font-size: 2.4rem;
         font-weight: 700;
         line-height: 1.2;
         word-break: break-all;
     }
     
     .display-expression {
-        color: #8E8E93;
-        font-size: 0.75rem;
+        color: #94A3B8;
+        font-size: 0.8rem;
         font-family: 'JetBrains Mono', monospace;
-        margin-top: 2px;
+        margin-top: 4px;
     }
     
     /* Select box */
     .stSelectbox [data-baseweb="select"] {
-        background: #2C2C2E !important;
-        border-radius: 10px !important;
+        background: #1E293B !important;
+        border-radius: 14px !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
     }
     
     .stSelectbox [data-baseweb="select"] div {
-        color: #FFFFFF !important;
+        color: #F1F5F9 !important;
     }
     
     /* Inputs */
     .stNumberInput input {
-        background: #2C2C2E !important;
+        background: #1E293B !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 10px !important;
-        color: #FFFFFF !important;
-        padding: 10px 12px !important;
+        border-radius: 14px !important;
+        color: #F1F5F9 !important;
+        padding: 10px 14px !important;
         font-family: 'JetBrains Mono', monospace !important;
-        font-size: 1rem !important;
+        font-size: 1.05rem !important;
     }
     
     /* Botão Calculate */
     .stButton > button {
-        background: #6C63FF !important;
+        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
         color: #FFFFFF !important;
         border: none !important;
-        border-radius: 10px !important;
-        padding: 12px !important;
-        font-size: 0.95rem !important;
+        border-radius: 14px !important;
+        padding: 14px !important;
+        font-size: 1rem !important;
         font-weight: 600 !important;
-        letter-spacing: 0.3px !important;
-        transition: all 0.2s ease !important;
-        margin-top: 4px !important;
+        letter-spacing: 0.5px !important;
+        transition: all 0.25s ease !important;
+        margin-top: 8px !important;
+        box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5) !important;
     }
     
     .stButton > button:hover {
-        background: #5A52E0 !important;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+        background: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.7) !important;
     }
     
     /* Labels */
     .stSelectbox label, .stNumberInput label {
-        color: #8E8E93 !important;
+        color: #94A3B8 !important;
         font-family: 'Inter', sans-serif !important;
         font-size: 0.78rem !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -168,21 +173,21 @@ st.markdown("""
     
     /* History */
     .history-item {
-        background: #2C2C2E;
-        border-left: 3px solid #6C63FF;
-        padding: 8px 12px;
-        margin: 6px 0;
-        border-radius: 0 8px 8px 0;
+        background: #1E293B;
+        border-left: 4px solid #3B82F6;
+        padding: 10px 14px;
+        margin: 8px 0;
+        border-radius: 0 12px 12px 0;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.82rem;
-        color: #CCCCCC;
+        font-size: 0.85rem;
+        color: #E2E8F0;
     }
     
     .footer {
         text-align: center;
-        color: #8E8E93;
-        margin-top: 1.5rem;
-        font-size: 0.78rem;
+        color: #94A3B8;
+        margin-top: 2rem;
+        font-size: 0.8rem;
         font-family: 'Inter', sans-serif;
     }
     
@@ -190,12 +195,12 @@ st.markdown("""
         display: inline-block;
         padding: 3px 10px;
         border-radius: 14px;
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 0.3px;
-        background: rgba(108, 99, 255, 0.2);
-        color: #6C63FF;
-        border: 1px solid rgba(108, 99, 255, 0.3);
+        background: rgba(59, 130, 246, 0.2);
+        color: #60A5FA;
+        border: 1px solid rgba(59, 130, 246, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -288,7 +293,7 @@ if st.session_state.history:
             st.markdown(f"""
                 <div class="history-item">
                     <strong>{item['expr']}</strong> = {item['result']}
-                    <span style="color:#8E8E93;float:right;font-size:0.7rem;">{item['time']}</span>
+                    <span style="color:#94A3B8;float:right;font-size:0.75rem;">{item['time']}</span>
                 </div>
             """, unsafe_allow_html=True)
         
