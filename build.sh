@@ -1,7 +1,10 @@
-seu-repositorio/
+math-core-3000/
+├── .streamlit/
+│   └── config.toml
 ├── app.py
 ├── calculator.cpp
+├── setup.py
+├── pyproject.toml
 ├── packages.txt
 ├── requirements.txt
-├── setup.py
-└── pyproject.toml
+└── README.md
