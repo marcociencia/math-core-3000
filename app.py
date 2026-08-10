@@ -127,7 +127,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# Inicialização do Session State
+# Start of Session State
 # ============================================
 if 'display_value' not in st.session_state:
     st.session_state.display_value = "0"
@@ -137,15 +137,17 @@ if 'last_result' not in st.session_state:
     st.session_state.last_result = 0.0
 if 'history' not in st.session_state:
     st.session_state.history = []
-if 'reset_trigger' not in st.session_state:
-    st.session_state.reset_trigger = False
-if 'calc_trigger' not in st.session_state:
-    st.session_state.calc_trigger = False
 if 'current_op' not in st.session_state:
     st.session_state.current_op = "➕ Addition"
+if 'previous_op' not in st.session_state:
+    st.session_state.previous_op = "➕ Addition"
+if 'n1_value' not in st.session_state:
+    st.session_state.n1_value = 0.0
+if 'n2_value' not in st.session_state:
+    st.session_state.n2_value = 0.0
 
 # ============================================
-# Funções de Callback
+# Function of Callback
 # ============================================
 def reset_all():
     """Callback para resetar tudo"""
@@ -153,15 +155,25 @@ def reset_all():
     st.session_state.display_expr = "Enter a calculation"
     st.session_state.last_result = 0.0
     st.session_state.history = []
-    st.session_state.reset_trigger = True
     st.session_state.current_op = "➕ Addition"
+    st.session_state.previous_op = "➕ Addition"
+    st.session_state.n1_value = 0.0
+    st.session_state.n2_value = 0.0
 
-def calculate():
-    """Callback para calcular"""
-    st.session_state.calc_trigger = True
+def on_op_change():
+    """Callback quando muda a operação"""
+    st.session_state.previous_op = st.session_state.current_op
+    st.session_state.current_op = st.session_state.op_selector
+    
+    # Se mudou para raiz quadrada ou cúbica, usa o último resultado como n1
+    if st.session_state.current_op in ["√ Square Root", "∛ Cube Root"]:
+        st.session_state.n1_value = st.session_state.last_result
+    else:
+        # Se mudou para operação binária, mantém o último resultado como n1
+        st.session_state.n1_value = st.session_state.last_result
 
 # ============================================
-# Cabeçalho
+# Header
 # ============================================
 st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
@@ -177,7 +189,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# Operações
+# Operation
 # ============================================
 operations = {
     "➕ Addition": "add",
@@ -192,7 +204,7 @@ operations = {
 
 op_names = list(operations.keys())
 
-# Determinar índice da operação atual
+# Índice da operação atual
 if st.session_state.current_op in op_names:
     op_index = op_names.index(st.session_state.current_op)
 else:
@@ -203,11 +215,9 @@ selected_op = st.selectbox(
     op_names, 
     index=op_index,
     label_visibility="visible",
-    key="op_selector"
+    key="op_selector",
+    on_change=on_op_change
 )
-
-# Atualiza operação atual
-st.session_state.current_op = selected_op
 
 # Determina se é operação de um número só
 is_single = selected_op in ["√ Square Root", "∛ Cube Root"]
@@ -215,42 +225,48 @@ is_single = selected_op in ["√ Square Root", "∛ Cube Root"]
 # ============================================
 # Inputs
 # ============================================
-# Determinar valores iniciais
-if is_single:
-    default_n1 = float(st.session_state.last_result) if st.session_state.last_result != 0 else 0.0
-else:
-    default_n1 = float(st.session_state.last_result) if st.session_state.last_result != 0 and not st.session_state.reset_trigger else 0.0
-
 col1, col2 = st.columns(2)
 
 with col1:
-    if st.session_state.reset_trigger:
-        num1 = st.number_input("First Number", value=0.00, format="%.2f", key="n1_reset")
-        st.session_state.reset_trigger = False
-    else:
-        num1 = st.number_input("First Number", value=default_n1, format="%.2f", key="n1")
+    num1 = st.number_input(
+        "First Number", 
+        value=st.session_state.n1_value,
+        format="%.2f", 
+        key="n1_input"
+    )
 
 with col2:
     if is_single:
-        num2 = st.number_input("Second Number", value=0.00, format="%.2f", disabled=True, key="n2_disabled")
+        num2 = st.number_input(
+            "Second Number", 
+            value=0.00, 
+            format="%.2f", 
+            disabled=True, 
+            key="n2_disabled"
+        )
     else:
-        num2 = st.number_input("Second Number", value=0.00, format="%.2f", key="n2")
+        num2 = st.number_input(
+            "Second Number", 
+            value=st.session_state.n2_value,
+            format="%.2f", 
+            key="n2_input"
+        )
 
 # ============================================
-# Botões
+# Button
 # ============================================
 col_calc, col_reset = st.columns([3, 1])
 
 with col_calc:
-    st.button("🚀 Calculate", use_container_width=True, key="calc_btn", on_click=calculate)
+    calc_clicked = st.button("🚀 Calculate", use_container_width=True, key="calc_btn")
 
 with col_reset:
-    st.button("🔄 Reset", use_container_width=True, key="reset_btn", on_click=reset_all)
+    reset_clicked = st.button("🔄 Reset", use_container_width=True, key="reset_btn", on_click=reset_all)
 
 # ============================================
-# Lógica de Cálculo
+# Calc Logic
 # ============================================
-if st.session_state.calc_trigger:
+if calc_clicked:
     try:
         op_func = getattr(calc, operations[selected_op])
         
@@ -271,10 +287,13 @@ if st.session_state.calc_trigger:
         else:
             result_str = f"{result:.6g}"
         
-        # Atualiza session state
+        # ====== CORREÇÃO AQUI ======
+        # Atualiza TUDO com o resultado do cálculo
         st.session_state.display_value = result_str
         st.session_state.display_expr = f"{expr} = {result_str}"
         st.session_state.last_result = result
+        st.session_state.n1_value = result  # ← Isso faz o encadeamento funcionar
+        st.session_state.n2_value = num2
         
         # Adiciona ao histórico
         st.session_state.history.append({
@@ -283,14 +302,14 @@ if st.session_state.calc_trigger:
             'time': time.strftime("%H:%M")
         })
         
+        # Recarrega para atualizar os inputs com o novo valor
+        st.rerun()
+        
     except Exception as e:
-        st.session_state.display_value = "Error"
         st.error(f"Error: {str(e)}")
-    
-    st.session_state.calc_trigger = False
 
 # ============================================
-# Display do Resultado
+# Display Resulted
 # ============================================
 st.markdown(f"""
     <div class="display-box">
@@ -300,7 +319,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ============================================
-# Histórico
+# History
 # ============================================
 if st.session_state.history:
     with st.expander(f"📜 History ({len(st.session_state.history)})", expanded=False):
@@ -313,7 +332,7 @@ if st.session_state.history:
             """, unsafe_allow_html=True)
 
 # ============================================
-# Rodapé
+# Footer
 # ============================================
 st.markdown("""
     <div style="text-align: center; color: #6E707E; font-size: 0.75rem; margin-top: 25px; font-family: 'Inter', sans-serif;">
