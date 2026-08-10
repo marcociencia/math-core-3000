@@ -1,8 +1,14 @@
 import streamlit as st
 import time
 
-if "n2_input" not in st.session_state:
-    st.session_state["n2_input"] = 0.0
+# Exemplo de lógica corrigida
+if st.button("Calculate"):
+    if operacao == "√ Square Root":
+        # Usa apenas o primeiro número. Não tenta ler o n2_input.
+        resultado = math.sqrt(st.session_state["n1_input"]) 
+    else:
+        # Para soma, subtração, etc., pode ler os dois com segurança.
+        resultado = st.session_state["n1_input"] + st.session_state["n2_input"]
     
 # Try import C++, otherwise, use Python
 try:
