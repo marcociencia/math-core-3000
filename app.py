@@ -134,43 +134,36 @@ if 'display_value' not in st.session_state:
 if 'display_expr' not in st.session_state:
     st.session_state.display_expr = "Enter a calculation"
 if 'last_result' not in st.session_state:
-    st.session_state.last_result = 0.0
+    st.session_state.last_result = None
 if 'history' not in st.session_state:
     st.session_state.history = []
 if 'current_op' not in st.session_state:
     st.session_state.current_op = "➕ Addition"
-if 'previous_op' not in st.session_state:
-    st.session_state.previous_op = "➕ Addition"
-if 'n1_value' not in st.session_state:
-    st.session_state.n1_value = 0.0
-if 'n2_value' not in st.session_state:
-    st.session_state.n2_value = 0.0
+if 'n1_input' not in st.session_state:
+    st.session_state.n1_input = 0.0
+if 'n2_input' not in st.session_state:
+    st.session_state.n2_input = 0.0
 
 # ============================================
-# Function of Callback
+# Functions of Callbacks
 # ============================================
 def reset_all():
     """Callback para resetar tudo"""
     st.session_state.display_value = "0"
     st.session_state.display_expr = "Enter a calculation"
-    st.session_state.last_result = 0.0
+    st.session_state.last_result = None
     st.session_state.history = []
     st.session_state.current_op = "➕ Addition"
-    st.session_state.previous_op = "➕ Addition"
-    st.session_state.n1_value = 0.0
-    st.session_state.n2_value = 0.0
+    st.session_state.n1_input = 0.0
+    st.session_state.n2_input = 0.0
 
 def on_op_change():
-    """Callback quando muda a operação"""
-    st.session_state.previous_op = st.session_state.current_op
+    """Callback acionado ao mudar a operação"""
     st.session_state.current_op = st.session_state.op_selector
     
-    # Se mudou para raiz quadrada ou cúbica, usa o último resultado como n1
-    if st.session_state.current_op in ["√ Square Root", "∛ Cube Root"]:
-        st.session_state.n1_value = st.session_state.last_result
-    else:
-        # Se mudou para operação binária, mantém o último resultado como n1
-        st.session_state.n1_value = st.session_state.last_result
+    # Se já foi feito algum cálculo prévio, usa o resultado como o n1_input
+    if st.session_state.last_result is not None:
+        st.session_state.n1_input = float(st.session_state.last_result)
 
 # ============================================
 # Header
@@ -204,11 +197,7 @@ operations = {
 
 op_names = list(operations.keys())
 
-# Índice da operação atual
-if st.session_state.current_op in op_names:
-    op_index = op_names.index(st.session_state.current_op)
-else:
-    op_index = 0
+op_index = op_names.index(st.session_state.current_op) if st.session_state.current_op in op_names else 0
 
 selected_op = st.selectbox(
     "Operation", 
@@ -230,7 +219,6 @@ col1, col2 = st.columns(2)
 with col1:
     num1 = st.number_input(
         "First Number", 
-        value=st.session_state.n1_value,
         format="%.2f", 
         key="n1_input"
     )
@@ -247,13 +235,12 @@ with col2:
     else:
         num2 = st.number_input(
             "Second Number", 
-            value=st.session_state.n2_value,
             format="%.2f", 
             key="n2_input"
         )
 
 # ============================================
-# Button
+# Buttons
 # ============================================
 col_calc, col_reset = st.columns([3, 1])
 
@@ -287,13 +274,13 @@ if calc_clicked:
         else:
             result_str = f"{result:.6g}"
         
-        # ====== CORREÇÃO AQUI ======
-        # Atualiza TUDO com o resultado do cálculo
+        # ====== CORREÇÃO DO ESTADO ======
         st.session_state.display_value = result_str
         st.session_state.display_expr = f"{expr} = {result_str}"
         st.session_state.last_result = result
-        st.session_state.n1_value = result  # ← Isso faz o encadeamento funcionar
-        st.session_state.n2_value = num2
+        
+        # Atualiza diretamente a chave usada pelo widget 'n1_input'
+        st.session_state.n1_input = float(result)
         
         # Adiciona ao histórico
         st.session_state.history.append({
@@ -302,14 +289,14 @@ if calc_clicked:
             'time': time.strftime("%H:%M")
         })
         
-        # Recarrega para atualizar os inputs com o novo valor
+        # Recarrega a página para refletir no input
         st.rerun()
         
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
 # ============================================
-# Display Resulted
+# Display Result
 # ============================================
 st.markdown(f"""
     <div class="display-box">
