@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
-#include <cmath>
 #include <stdexcept>
+#include <cmath>
 
 namespace py = pybind11;
 
