@@ -27,7 +27,7 @@ except:
 # Configuração da página
 st.set_page_config(page_title="Math Core 3000", page_icon="🧮", layout="centered")
 
-# CSS Elegante com fundo cinza, bordas arredondadas e sombras
+# CSS - Layout Horizontal igual a Imagem
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
@@ -40,9 +40,9 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
         color: #6C63FF;
         text-align: center;
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
         text-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
         letter-spacing: -0.5px;
     }
@@ -50,63 +50,126 @@ st.markdown("""
     .subtitle {
         color: #8B8B8B;
         text-align: center;
-        font-size: 1rem;
+        font-size: 0.9rem;
         margin-bottom: 2rem;
         font-family: 'Inter', sans-serif;
     }
     
-    /* Calculadora com fundo cinza, bordas arredondadas e sombra */
+    /* CALCULADORA - Layout Horizontal */
+    .calculator-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    
     .calculator-container {
         background: #2C2C2E;
-        border-radius: 24px;
-        padding: 2.5rem 2rem;
-        margin: 0 auto;
-        max-width: 500px;
+        border-radius: 20px;
+        padding: 30px 25px;
+        width: 100%;
+        max-width: 550px;
         box-shadow: 
             0 20px 60px rgba(0, 0, 0, 0.5),
             0 8px 20px rgba(0, 0, 0, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+            inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
     }
     
+    /* Display de Resultado */
     .result-display {
         background: #1C1C1E;
-        border: 1px solid rgba(108, 99, 255, 0.3);
-        border-radius: 16px;
-        padding: 1.5rem;
-        text-align: center;
-        margin: 1.5rem 0;
+        border: 1px solid rgba(108, 99, 255, 0.25);
+        border-radius: 14px;
+        padding: 18px 20px;
+        text-align: right;
+        margin-bottom: 20px;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        min-height: 80px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .result-label {
+        color: #6B6B6B;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 4px;
+        font-family: 'Inter', sans-serif;
     }
     
     .result-number {
         font-family: 'JetBrains Mono', monospace;
-        color: #6C63FF;
+        color: #FFFFFF;
         font-size: 2.5rem;
         font-weight: 700;
-        text-shadow: 0 0 15px rgba(108, 99, 255, 0.3);
+        line-height: 1.2;
     }
     
-    .result-label {
-        color: #8B8B8B;
+    .result-expression {
+        color: #6B6B6B;
         font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 0.5rem;
+        margin-top: 4px;
+        font-family: 'JetBrains Mono', monospace;
     }
     
+    /* Linha de Operações - Horizontal */
+    .operations-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .op-button {
+        flex: 1;
+        min-width: 55px;
+        padding: 10px 5px;
+        border-radius: 10px;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+    }
+    
+    /* Selectbox estilizado */
+    .stSelectbox > div > div {
+        background: #1C1C1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+    }
+    
+    /* Inputs de número */
+    .stNumberInput > div > div {
+        background: #1C1C1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+    }
+    
+    .stNumberInput input {
+        color: white !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* Botão Calculate */
     .stButton > button {
         background: linear-gradient(135deg, #6C63FF 0%, #4834D4 100%);
         color: white;
         border: none;
         border-radius: 12px;
-        padding: 1rem;
+        padding: 12px;
         width: 100%;
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 600;
         transition: all 0.3s ease;
         letter-spacing: 0.5px;
         box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+        margin-top: 8px;
     }
     
     .stButton > button:hover {
@@ -118,24 +181,16 @@ st.markdown("""
         transform: translateY(0);
     }
     
-    .stSelectbox > div > div {
-        background: #1C1C1E !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        color: white !important;
+    /* Labels */
+    label {
+        color: #8B8B8B !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     
-    .stNumberInput > div > div {
-        background: #1C1C1E !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        color: white !important;
-    }
-    
-    .stNumberInput input {
-        color: white !important;
-    }
-    
+    /* History */
     .history-item {
         background: rgba(108, 99, 255, 0.05);
         border-left: 3px solid #6C63FF;
@@ -143,34 +198,27 @@ st.markdown("""
         margin: 0.5rem 0;
         border-radius: 0 8px 8px 0;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        color: #CCCCCC;
     }
     
+    /* Footer */
     .footer {
         text-align: center;
-        color: #8B8B8B;
+        color: #6B6B6B;
         margin-top: 2rem;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-family: 'Inter', sans-serif;
     }
     
+    /* Badge */
     .badge {
         display: inline-block;
-        padding: 0.3rem 1rem;
+        padding: 0.3rem 0.8rem;
         border-radius: 20px;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 700;
         letter-spacing: 0.5px;
-    }
-    
-    .badge-cpp {
-        background: linear-gradient(135deg, #6C63FF, #4834D4);
-        color: white;
-    }
-    
-    .badge-python {
-        background: linear-gradient(135deg, #3776AB, #FFD43B);
-        color: white;
     }
     
     .badge-hybrid {
@@ -178,18 +226,22 @@ st.markdown("""
         color: white;
     }
     
+    /* Expander */
     .stExpander {
         background: #2C2C2E;
         border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.06);
     }
     
-    label {
-        color: #8B8B8B !important;
-        font-family: 'Inter', sans-serif !important;
-        font-size: 0.85rem !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+    /* Remover espaços extras */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* Ajustar colunas */
+    .stColumns {
+        gap: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -200,75 +252,88 @@ if 'history' not in st.session_state:
 
 # Interface
 st.markdown('<h1 class="main-title">⚡ Math Core 3000</h1>', unsafe_allow_html=True)
-
-# Badge híbrido elegante
 st.markdown(f'<p class="subtitle">Advanced Calculation Engine • <span class="badge badge-hybrid">Python & C++</span></p>', unsafe_allow_html=True)
 
-# Calculator Container
-with st.container():
-    st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
-    
-    operations = {
-        "➕ Addition": "add",
-        "➖ Subtraction": "subtract", 
-        "✖️ Multiplication": "multiply",
-        "➗ Division": "divide",
-        "🔢 Power": "power",
-        "√ Square Root": "sqrt",
-        "💯 Percentage": "percentage"
-    }
-    
-    selected_op = st.selectbox(
-        "Select Operation",
-        list(operations.keys()),
-        label_visibility="collapsed"
-    )
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        num1 = st.number_input("First Number", value=0.0, format="%.4f")
-    
-    with col2:
+# Calculator Container - Layout Horizontal
+st.markdown('<div class="calculator-wrapper">', unsafe_allow_html=True)
+st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
+
+# Display de resultado (sempre visível)
+if 'last_result' not in st.session_state:
+    st.session_state.last_result = "0"
+    st.session_state.last_expression = "Enter a calculation"
+
+st.markdown(f"""
+    <div class="result-display">
+        <div class="result-label">Result</div>
+        <div class="result-number">{st.session_state.last_result}</div>
+        <div class="result-expression">{st.session_state.last_expression}</div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Selector de operação
+operations = {
+    "➕ Addition": "add",
+    "➖ Subtraction": "subtract", 
+    "✖️ Multiplication": "multiply",
+    "➗ Division": "divide",
+    "🔢 Power": "power",
+    "√ Square Root": "sqrt",
+    "💯 Percentage": "percentage"
+}
+
+selected_op = st.selectbox(
+    "Operation",
+    list(operations.keys()),
+    label_visibility="visible"
+)
+
+# Inputs lado a lado
+col1, col2 = st.columns(2)
+
+with col1:
+    num1 = st.number_input("First Number", value=0.0, format="%.2f", key="num1")
+
+with col2:
+    if operations[selected_op] == "sqrt":
+        num2 = 0
+        st.number_input("Second Number", value=0.0, disabled=True, key="num2_disabled")
+    else:
+        num2 = st.number_input("Second Number", value=0.0, format="%.2f", key="num2")
+
+# Botão Calculate
+if st.button("Calculate", use_container_width=True):
+    try:
+        operation_func = getattr(calc, operations[selected_op])
+        
         if operations[selected_op] == "sqrt":
-            num2 = 0
-            st.number_input("Second Number", value=0.0, disabled=True)
+            result = operation_func(num1)
+            expression = f"√({num1})"
         else:
-            num2 = st.number_input("Second Number", value=0.0, format="%.4f")
-    
-    if st.button("🚀 Calculate", use_container_width=True):
-        try:
-            operation_func = getattr(calc, operations[selected_op])
-            
-            if operations[selected_op] == "sqrt":
-                result = operation_func(num1)
-                expression = f"√({num1})"
-            else:
-                result = operation_func(num1, num2)
-                expression = f"{num1} {selected_op.split()[1]} {num2}"
-            
-            result_str = f"{result:.6g}"
-            
-            st.markdown(f"""
-                <div class="result-display">
-                    <div class="result-label">Result</div>
-                    <div class="result-number">{result_str}</div>
-                    <div style="color: #6B6B6B; font-size: 0.8rem; margin-top: 0.5rem;">
-                        {expression} = {result_str}
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.session_state.history.append({
-                'expression': expression,
-                'result': result_str,
-                'timestamp': time.strftime("%H:%M:%S")
-            })
-            
-        except Exception as e:
-            st.error(f"⚠️ {str(e)}")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+            result = operation_func(num1, num2)
+            op_symbol = selected_op.split()[1]
+            expression = f"{num1} {op_symbol} {num2}"
+        
+        result_str = f"{result:.6g}"
+        
+        # Atualizar display
+        st.session_state.last_result = result_str
+        st.session_state.last_expression = f"{expression} = {result_str}"
+        
+        # Adicionar ao histórico
+        st.session_state.history.append({
+            'expression': expression,
+            'result': result_str,
+            'timestamp': time.strftime("%H:%M:%S")
+        })
+        
+        st.rerun()
+        
+    except Exception as e:
+        st.error(f"⚠️ {str(e)}")
+
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 # History
 if st.session_state.history:
@@ -277,7 +342,7 @@ if st.session_state.history:
             st.markdown(f"""
                 <div class="history-item">
                     <strong>{item['expression']}</strong> = {item['result']}
-                    <span style="color: #8B8B8B; float: right;">{item['timestamp']}</span>
+                    <span style="color: #8B8B8B; float: right; font-size: 0.75rem;">{item['timestamp']}</span>
                 </div>
             """, unsafe_allow_html=True)
         
@@ -286,7 +351,7 @@ if st.session_state.history:
             st.rerun()
 
 # Footer
-st.markdown(f"""
+st.markdown("""
     <div class="footer">
         🚀 Math Core 3000 v1.0.0 • Python & C++ Powered
     </div>
@@ -299,12 +364,9 @@ with st.sidebar:
     st.markdown(f"**Total Operations:** {len(st.session_state.history)}")
     st.markdown("---")
     st.markdown("**Available Operations:**")
-    st.markdown("➕ Addition")
-    st.markdown("➖ Subtraction")
-    st.markdown("✖️ Multiplication")
-    st.markdown("➗ Division")
-    st.markdown("🔢 Power")
-    st.markdown("√ Square Root")
-    st.markdown("💯 Percentage")
+    st.markdown("➕ ➖ ✖️ ➗")
+    st.markdown("🔢 √ 💯")
     st.markdown("---")
     st.markdown("[📦 GitHub Repository](https://github.com/seu-usuario/math-core-3000)")
+    st.markdown("---")
+    st.markdown(f"🔗 [Live Demo](https://math-core-3000-jwdvud23nqkr28jezsgura.streamlit.app/)")
