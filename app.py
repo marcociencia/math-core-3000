@@ -143,12 +143,29 @@ if 'n1_input' not in st.session_state:
     st.session_state.n1_input = 0.0
 if 'n2_input' not in st.session_state:
     st.session_state.n2_input = 0.0
+if 'error_msg' not in st.session_state:
+    st.session_state.error_msg = ""
+
+# ============================================
+# Mapping de Operações
+# ============================================
+operations = {
+    "➕ Addition": "add",
+    "➖ Subtraction": "subtract", 
+    "✖️ Multiplication": "multiply",
+    "➗ Division": "divide",
+    "🔢 Power (xʸ)": "power",
+    "√ Square Root": "sqrt",
+    "∛ Cube Root": "cbrt",
+    "💯 Percentage": "percentage"
+}
+op_names = list(operations.keys())
 
 # ============================================
 # Functions of Callbacks
 # ============================================
 def reset_all():
-    """Callback para resetar tudo"""
+    """Callback para resetar tudo com segurança"""
     st.session_state.display_value = "0"
     st.session_state.display_expr = "Enter a calculation"
     st.session_state.last_result = None
@@ -156,17 +173,63 @@ def reset_all():
     st.session_state.current_op = "➕ Addition"
     st.session_state.n1_input = 0.0
     st.session_state.n2_input = 0.0
+    st.session_state.error_msg = ""
 
 def on_op_change():
-    """Callback acionado ao mudar a operação"""
+    """Callback acionado ANTES de a tela recarregar ao mudar operação"""
     st.session_state.current_op = st.session_state.op_selector
-    
-    # Se já foi feito algum cálculo prévio, usa o resultado como o n1_input
+    # Mantém o último resultado (se houver) no n1_input ao mudar de operação
     if st.session_state.last_result is not None:
         st.session_state.n1_input = float(st.session_state.last_result)
 
+def do_calculation():
+    """Callback principal que realiza o cálculo e atualiza os inputs"""
+    st.session_state.error_msg = ""
+    try:
+        selected_op = st.session_state.op_selector
+        op_func = getattr(calc, operations[selected_op])
+        
+        # Puxa os valores diretamente do session_state
+        n1 = st.session_state.n1_input
+        n2 = st.session_state.n2_input
+        is_single = selected_op in ["√ Square Root", "∛ Cube Root"]
+        
+        if is_single:
+            result = op_func(n1)
+            expr = f"√({n1})" if selected_op == "√ Square Root" else f"∛({n1})"
+        else:
+            result = op_func(n1, n2)
+            symbol = selected_op.split()[0]
+            expr = f"{n1} {symbol} {n2}"
+        
+        # Formata resultado (remove zeros irrelevantes)
+        if result == int(result):
+            result_str = str(int(result))
+        else:
+            result_str = f"{result:.6g}"
+        
+        # Atualiza a interface
+        st.session_state.display_value = result_str
+        st.session_state.display_expr = f"{expr} = {result_str}"
+        st.session_state.last_result = float(result)
+        
+        # ===== CORREÇÃO DEFINITIVA =====
+        # Aqui, como estamos dentro de um callback (antes da tela desenhar), 
+        # atualizar n1_input é perfeitamente seguro e não gera erros.
+        st.session_state.n1_input = float(result)
+        
+        # Adiciona ao histórico
+        st.session_state.history.append({
+            'expr': expr,
+            'result': result_str,
+            'time': time.strftime("%H:%M")
+        })
+        
+    except Exception as e:
+        st.session_state.error_msg = str(e)
+
 # ============================================
-# Header
+# Interface Visual (Header)
 # ============================================
 st.markdown("""
     <div style="text-align: center; margin-bottom: 25px;">
@@ -182,21 +245,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# Operation
+# Inputs de Operação e Números
 # ============================================
-operations = {
-    "➕ Addition": "add",
-    "➖ Subtraction": "subtract", 
-    "✖️ Multiplication": "multiply",
-    "➗ Division": "divide",
-    "🔢 Power (xʸ)": "power",
-    "√ Square Root": "sqrt",
-    "∛ Cube Root": "cbrt",
-    "💯 Percentage": "percentage"
-}
-
-op_names = list(operations.keys())
-
 op_index = op_names.index(st.session_state.current_op) if st.session_state.current_op in op_names else 0
 
 selected_op = st.selectbox(
@@ -205,99 +255,42 @@ selected_op = st.selectbox(
     index=op_index,
     label_visibility="visible",
     key="op_selector",
-    on_change=on_op_change
+    on_change=on_op_change  # Aciona callback na mudança
 )
 
-# Determina se é operação de um número só
 is_single = selected_op in ["√ Square Root", "∛ Cube Root"]
 
-# ============================================
-# Inputs
-# ============================================
 col1, col2 = st.columns(2)
 
 with col1:
-    num1 = st.number_input(
-        "First Number", 
-        format="%.2f", 
-        key="n1_input"
-    )
+    # Apenas passa a key; o valor será puxado do session state atual
+    st.number_input("First Number", format="%.2f", key="n1_input")
 
 with col2:
     if is_single:
-        num2 = st.number_input(
-            "Second Number", 
-            value=0.00, 
-            format="%.2f", 
-            disabled=True, 
-            key="n2_disabled"
-        )
+        # Se desabilitado, criamos um campo genérico de valor 0.0
+        st.number_input("Second Number", value=0.00, format="%.2f", disabled=True, key="n2_disabled")
     else:
-        num2 = st.number_input(
-            "Second Number", 
-            format="%.2f", 
-            key="n2_input"
-        )
+        st.number_input("Second Number", format="%.2f", key="n2_input")
 
 # ============================================
-# Buttons
+# Buttons com Callbacks
 # ============================================
 col_calc, col_reset = st.columns([3, 1])
 
 with col_calc:
-    calc_clicked = st.button("🚀 Calculate", use_container_width=True, key="calc_btn")
+    # Vinculamos o cálculo ao on_click, evitando usar o 'if st.button:'
+    st.button("🚀 Calculate", use_container_width=True, key="calc_btn", on_click=do_calculation)
 
 with col_reset:
-    reset_clicked = st.button("🔄 Reset", use_container_width=True, key="reset_btn", on_click=reset_all)
+    st.button("🔄 Reset", use_container_width=True, key="reset_btn", on_click=reset_all)
 
 # ============================================
-# Calc Logic
+# Alertas e Display Final
 # ============================================
-if calc_clicked:
-    try:
-        op_func = getattr(calc, operations[selected_op])
-        
-        if is_single:
-            result = op_func(num1)
-            if selected_op == "√ Square Root":
-                expr = f"√({num1})"
-            else:
-                expr = f"∛({num1})"
-        else:
-            result = op_func(num1, num2)
-            symbol = selected_op.split()[0]
-            expr = f"{num1} {symbol} {num2}"
-        
-        # Formata resultado
-        if result == int(result):
-            result_str = str(int(result))
-        else:
-            result_str = f"{result:.6g}"
-        
-        # ====== CORREÇÃO DO ESTADO ======
-        st.session_state.display_value = result_str
-        st.session_state.display_expr = f"{expr} = {result_str}"
-        st.session_state.last_result = result
-        
-        # Atualiza diretamente a chave usada pelo widget 'n1_input'
-        st.session_state.n1_input = float(result)
-        
-        # Adiciona ao histórico
-        st.session_state.history.append({
-            'expr': expr,
-            'result': result_str,
-            'time': time.strftime("%H:%M")
-        })
-        
-        # Recarrega a página para refletir no input
-        st.rerun()
-        
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
+if st.session_state.error_msg:
+    st.error(f"Error: {st.session_state.error_msg}")
 
-# ============================================
-# Display Result
-# ============================================
 st.markdown(f"""
     <div class="display-box">
         <div class="display-expression">{st.session_state.display_expr}</div>
@@ -306,7 +299,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ============================================
-# History
+# History & Footer
 # ============================================
 if st.session_state.history:
     with st.expander(f"📜 History ({len(st.session_state.history)})", expanded=False):
@@ -318,9 +311,6 @@ if st.session_state.history:
                 </div>
             """, unsafe_allow_html=True)
 
-# ============================================
-# Footer
-# ============================================
 st.markdown("""
     <div style="text-align: center; color: #6E707E; font-size: 0.75rem; margin-top: 25px; font-family: 'Inter', sans-serif;">
         🚀 Math Core 3000 • Python & C++ Powered
