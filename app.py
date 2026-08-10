@@ -110,18 +110,6 @@ st.markdown("""
         margin-top: 2rem;
         font-size: 0.8rem;
     }
-    
-    .stSelectbox > div > div {
-        background: rgba(38, 39, 48, 0.8) !important;
-        border: 1px solid rgba(108, 99, 255, 0.3) !important;
-        border-radius: 10px !important;
-    }
-    
-    .stNumberInput > div > div {
-        background: rgba(38, 39, 48, 0.8) !important;
-        border: 1px solid rgba(108, 99, 255, 0.3) !important;
-        border-radius: 10px !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
