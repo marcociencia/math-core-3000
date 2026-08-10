@@ -7,6 +7,7 @@ try:
     calc = calc_backend.AdvancedCalculator()
     backend_type = "C++"
 except:
+    # Fallback Python
     class PythonCalc:
         def add(self, a, b): return a + b
         def subtract(self, a, b): return a - b
@@ -23,184 +24,172 @@ except:
     calc = PythonCalc()
     backend_type = "Python"
 
+# Configuração da página
 st.set_page_config(page_title="Math Core 3000", page_icon="🧮", layout="centered")
 
+# CSS Elegante com fundo cinza, bordas arredondadas e sombras
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
     
-    /* Fundo geral - Cinza Moderno */
     .stApp {
-        background: #2B303A;
-    }
-    
-    /* Container principal do Streamlit */
-    .block-container {
-        padding: 2rem 1rem 1rem 1rem !important;
-        max-width: 680px !important;
+        background: linear-gradient(135deg, #0E1117 0%, #1A1B23 100%);
     }
     
     .main-title {
         font-family: 'Inter', sans-serif;
-        color: #FFFFFF;
+        color: #6C63FF;
         text-align: center;
-        font-size: 2.2rem;
+        font-size: 3rem;
         font-weight: 700;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 0 20px rgba(108, 99, 255, 0.3);
         letter-spacing: -0.5px;
     }
     
     .subtitle {
-        color: #94A3B8;
+        color: #8B8B8B;
         text-align: center;
-        font-size: 0.88rem;
-        margin-bottom: 1.8rem;
+        font-size: 1rem;
+        margin-bottom: 2rem;
         font-family: 'Inter', sans-serif;
     }
     
-    /* ========== CALCULADORA (AZUL ESCURO) ========== */
+    /* Calculadora com fundo cinza, bordas arredondadas e sombra */
     .calculator-container {
-        background: #0F172A; /* Azul Escuro Navy */
-        border-radius: 28px; /* Cantos arredondados */
-        padding: 28px 30px;
+        background: #2C2C2E;
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
         margin: 0 auto;
-        width: 100%;
-        /* Sombra estilosa e profunda */
+        max-width: 500px;
         box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.5),
-            0 10px 25px -5px rgba(15, 23, 42, 0.6),
-            0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 8px 20px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
     }
     
-    /* Display */
-    .display {
-        background: #1E293B;
-        border-radius: 18px;
-        padding: 18px 22px;
-        margin-bottom: 20px;
-        text-align: right;
-        min-height: 80px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+    .result-display {
+        background: #1C1C1E;
+        border: 1px solid rgba(108, 99, 255, 0.3);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        margin: 1.5rem 0;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
     }
     
-    .display-label {
-        color: #64748B;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        font-family: 'Inter', sans-serif;
-        margin-bottom: 2px;
-        font-weight: 600;
-    }
-    
-    .display-value {
+    .result-number {
         font-family: 'JetBrains Mono', monospace;
-        color: #F8FAFC;
-        font-size: 2.4rem;
+        color: #6C63FF;
+        font-size: 2.5rem;
         font-weight: 700;
-        line-height: 1.2;
-        word-break: break-all;
+        text-shadow: 0 0 15px rgba(108, 99, 255, 0.3);
     }
     
-    .display-expression {
-        color: #94A3B8;
+    .result-label {
+        color: #8B8B8B;
         font-size: 0.8rem;
-        font-family: 'JetBrains Mono', monospace;
-        margin-top: 4px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
     }
     
-    /* Select box */
-    .stSelectbox [data-baseweb="select"] {
-        background: #1E293B !important;
-        border-radius: 14px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    }
-    
-    .stSelectbox [data-baseweb="select"] div {
-        color: #F1F5F9 !important;
-    }
-    
-    /* Inputs */
-    .stNumberInput input {
-        background: #1E293B !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 14px !important;
-        color: #F1F5F9 !important;
-        padding: 10px 14px !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 1.05rem !important;
-    }
-    
-    /* Botão Calculate */
     .stButton > button {
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 14px !important;
-        padding: 14px !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.5px !important;
-        transition: all 0.25s ease !important;
-        margin-top: 8px !important;
-        box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5) !important;
+        background: linear-gradient(135deg, #6C63FF 0%, #4834D4 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem;
+        width: 100%;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
     }
     
     .stButton > button:hover {
-        background: linear-gradient(135deg, #60A5FA 0%, #1D4ED8 100%) !important;
         transform: translateY(-2px);
-        box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.7) !important;
+        box-shadow: 0 8px 25px rgba(108, 99, 255, 0.5);
     }
     
-    /* Labels */
-    .stSelectbox label, .stNumberInput label {
-        color: #94A3B8 !important;
-        font-family: 'Inter', sans-serif !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+    .stButton > button:active {
+        transform: translateY(0);
     }
     
-    /* Remover "Press Enter" */
-    .stNumberInput p {
-        display: none;
+    .stSelectbox > div > div {
+        background: #1C1C1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
     }
     
-    /* History */
+    .stNumberInput > div > div {
+        background: #1C1C1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 12px !important;
+        color: white !important;
+    }
+    
+    .stNumberInput input {
+        color: white !important;
+    }
+    
     .history-item {
-        background: #1E293B;
-        border-left: 4px solid #3B82F6;
-        padding: 10px 14px;
-        margin: 8px 0;
-        border-radius: 0 12px 12px 0;
+        background: rgba(108, 99, 255, 0.05);
+        border-left: 3px solid #6C63FF;
+        padding: 0.5rem 1rem;
+        margin: 0.5rem 0;
+        border-radius: 0 8px 8px 0;
         font-family: 'JetBrains Mono', monospace;
-        font-size: 0.85rem;
-        color: #E2E8F0;
+        font-size: 0.9rem;
     }
     
     .footer {
         text-align: center;
-        color: #94A3B8;
+        color: #8B8B8B;
         margin-top: 2rem;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-family: 'Inter', sans-serif;
     }
     
     .badge {
         display: inline-block;
-        padding: 3px 10px;
-        border-radius: 14px;
-        font-size: 0.72rem;
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
         font-weight: 700;
-        letter-spacing: 0.3px;
-        background: rgba(59, 130, 246, 0.2);
-        color: #60A5FA;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        letter-spacing: 0.5px;
+    }
+    
+    .badge-cpp {
+        background: linear-gradient(135deg, #6C63FF, #4834D4);
+        color: white;
+    }
+    
+    .badge-python {
+        background: linear-gradient(135deg, #3776AB, #FFD43B);
+        color: white;
+    }
+    
+    .badge-hybrid {
+        background: linear-gradient(135deg, #6C63FF, #3776AB);
+        color: white;
+    }
+    
+    .stExpander {
+        background: #2C2C2E;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    label {
+        color: #8B8B8B !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 0.85rem !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -208,109 +197,114 @@ st.markdown("""
 # Session state
 if 'history' not in st.session_state:
     st.session_state.history = []
-if 'display_value' not in st.session_state:
-    st.session_state.display_value = "0"
-if 'display_expr' not in st.session_state:
-    st.session_state.display_expr = "Enter a calculation"
 
 # Interface
-st.markdown('<h1 class="main-title">Math Core 3000</h1>', unsafe_allow_html=True)
-st.markdown(f'<p class="subtitle">Advanced Calculation Engine &nbsp; <span class="badge">Python & C++</span></p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">⚡ Math Core 3000</h1>', unsafe_allow_html=True)
 
-# CALCULADORA
-st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
+# Badge híbrido elegante
+st.markdown(f'<p class="subtitle">Advanced Calculation Engine • <span class="badge badge-hybrid">Python & C++</span></p>', unsafe_allow_html=True)
 
-# Display
-st.markdown(f"""
-    <div class="display">
-        <div class="display-label">Result</div>
-        <div class="display-value">{st.session_state.display_value}</div>
-        <div class="display-expression">{st.session_state.display_expr}</div>
-    </div>
-""", unsafe_allow_html=True)
-
-# Operação
-operations = {
-    "Addition": "add",
-    "Subtraction": "subtract", 
-    "Multiplication": "multiply",
-    "Division": "divide",
-    "Power": "power",
-    "Square Root": "sqrt",
-    "Percentage": "percentage"
-}
-
-op_names = list(operations.keys())
-selected_op = st.selectbox("Operation", op_names, label_visibility="visible")
-
-# Inputs lado a lado
-col1, col2 = st.columns(2)
-
-with col1:
-    num1 = st.number_input("First Number", value=0.0, format="%.2f", key="n1")
-
-with col2:
-    if selected_op == "Square Root":
-        num2 = 0
-        st.number_input("Second Number", value=0.0, disabled=True, key="n2")
-    else:
-        num2 = st.number_input("Second Number", value=0.0, format="%.2f", key="n2")
-
-# Botão
-if st.button("Calculate", use_container_width=True, key="calc_btn"):
-    try:
-        op_func = getattr(calc, operations[selected_op])
-        
-        if selected_op == "Square Root":
-            result = op_func(num1)
-            expr = f"√({num1})"
+# Calculator Container
+with st.container():
+    st.markdown('<div class="calculator-container">', unsafe_allow_html=True)
+    
+    operations = {
+        "➕ Addition": "add",
+        "➖ Subtraction": "subtract", 
+        "✖️ Multiplication": "multiply",
+        "➗ Division": "divide",
+        "🔢 Power": "power",
+        "√ Square Root": "sqrt",
+        "💯 Percentage": "percentage"
+    }
+    
+    selected_op = st.selectbox(
+        "Select Operation",
+        list(operations.keys()),
+        label_visibility="collapsed"
+    )
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        num1 = st.number_input("First Number", value=0.0, format="%.4f")
+    
+    with col2:
+        if operations[selected_op] == "sqrt":
+            num2 = 0
+            st.number_input("Second Number", value=0.0, disabled=True)
         else:
-            result = op_func(num1, num2)
-            expr = f"{num1} {selected_op.lower()} {num2}"
-        
-        result_str = f"{result:.6g}"
-        
-        st.session_state.display_value = result_str
-        st.session_state.display_expr = f"{expr} = {result_str}"
-        
-        st.session_state.history.append({
-            'expr': expr,
-            'result': result_str,
-            'time': time.strftime("%H:%M")
-        })
-        
-        st.rerun()
-        
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
-
-st.markdown('</div>', unsafe_allow_html=True)
+            num2 = st.number_input("Second Number", value=0.0, format="%.4f")
+    
+    if st.button("🚀 Calculate", use_container_width=True):
+        try:
+            operation_func = getattr(calc, operations[selected_op])
+            
+            if operations[selected_op] == "sqrt":
+                result = operation_func(num1)
+                expression = f"√({num1})"
+            else:
+                result = operation_func(num1, num2)
+                expression = f"{num1} {selected_op.split()[1]} {num2}"
+            
+            result_str = f"{result:.6g}"
+            
+            st.markdown(f"""
+                <div class="result-display">
+                    <div class="result-label">Result</div>
+                    <div class="result-number">{result_str}</div>
+                    <div style="color: #6B6B6B; font-size: 0.8rem; margin-top: 0.5rem;">
+                        {expression} = {result_str}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            st.session_state.history.append({
+                'expression': expression,
+                'result': result_str,
+                'timestamp': time.strftime("%H:%M:%S")
+            })
+            
+        except Exception as e:
+            st.error(f"⚠️ {str(e)}")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # History
 if st.session_state.history:
-    with st.expander(f"History ({len(st.session_state.history)})", expanded=False):
+    with st.expander(f"📜 Calculation History ({len(st.session_state.history)})", expanded=False):
         for item in reversed(st.session_state.history[-10:]):
             st.markdown(f"""
                 <div class="history-item">
-                    <strong>{item['expr']}</strong> = {item['result']}
-                    <span style="color:#94A3B8;float:right;font-size:0.75rem;">{item['time']}</span>
+                    <strong>{item['expression']}</strong> = {item['result']}
+                    <span style="color: #8B8B8B; float: right;">{item['timestamp']}</span>
                 </div>
             """, unsafe_allow_html=True)
         
-        if st.button("Clear History", use_container_width=True):
+        if st.button("🗑️ Clear History", use_container_width=True):
             st.session_state.history = []
             st.rerun()
 
-st.markdown('<div class="footer">🚀 Math Core 3000 v1.0.0 • Python & C++ Powered</div>', unsafe_allow_html=True)
+# Footer
+st.markdown(f"""
+    <div class="footer">
+        🚀 Math Core 3000 v1.0.0 • Python & C++ Powered
+    </div>
+""", unsafe_allow_html=True)
 
 # Sidebar
 with st.sidebar:
     st.markdown("### 🧮 Math Core 3000")
     st.markdown(f"**Engine:** Python & C++")
-    st.markdown(f"**Operations:** {len(st.session_state.history)}")
+    st.markdown(f"**Total Operations:** {len(st.session_state.history)}")
     st.markdown("---")
-    st.markdown("**Available:**")
-    st.markdown("➕ ➖ ✖️ ➗ 🔢 √ 💯")
+    st.markdown("**Available Operations:**")
+    st.markdown("➕ Addition")
+    st.markdown("➖ Subtraction")
+    st.markdown("✖️ Multiplication")
+    st.markdown("➗ Division")
+    st.markdown("🔢 Power")
+    st.markdown("√ Square Root")
+    st.markdown("💯 Percentage")
     st.markdown("---")
-    st.markdown("[📦 GitHub](https://github.com/seu-usuario/math-core-3000)")
-    st.markdown("[🔗 Live Demo](https://math-core-3000-jwdvud23nqkr28jezsgura.streamlit.app/)")
+    st.markdown("[📦 GitHub Repository](https://github.com/seu-usuario/math-core-3000)")
